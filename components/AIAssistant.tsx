@@ -1,24 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, Send, User } from 'lucide-react';
-import { ChatMessage, Student, Expense } from '../types';
+import { Bot, Send, User, Trash2 } from 'lucide-react';
+import { ChatMessage, Student, Transaction } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 
 interface AIAssistantProps {
   students: Student[];
-  expenses: Expense[];
+  transactions: Transaction[];
 }
 
-export const AIAssistant: React.FC<AIAssistantProps> = ({ students, expenses }) => {
+export const AIAssistant: React.FC<AIAssistantProps> = ({ students, transactions }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
+  
+  // Initialize state from localStorage or use default welcome message
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const saved = localStorage.getItem('gymflow_chat_history');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Restore Date objects from strings
+        return parsed.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+      } catch (e) {
+        console.error("Error parsing chat history:", e);
+      }
+    }
+    return [{
       id: '1',
       role: 'assistant',
       content: 'Olá! Sou o GymFlow IA. Posso te ajudar a organizar suas finanças. Tente perguntar: "Quanto gastei esse mês?" ou "Quem está devendo?".',
       timestamp: new Date()
-    }
-  ]);
+    }];
+  });
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -28,6 +44,23 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ students, expenses }) 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('gymflow_chat_history', JSON.stringify(messages));
+  }, [messages]);
+
+  const clearHistory = () => {
+    if (window.confirm('Deseja limpar o histórico da conversa?')) {
+      const defaultMsg: ChatMessage[] = [{
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: 'Histórico limpo. Como posso ajudar agora?',
+        timestamp: new Date()
+      }];
+      setMessages(defaultMsg);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -44,7 +77,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ students, expenses }) 
     setIsLoading(true);
 
     // Call Gemini Service
-    const aiResponseText = await sendMessageToGemini(userMsg.content, { students, expenses });
+    const aiResponseText = await sendMessageToGemini(userMsg.content, { students, transactions });
 
     const aiMsg: ChatMessage = {
       id: (Date.now() + 1).toString(),
@@ -59,16 +92,25 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ students, expenses }) 
 
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-      <div className="p-4 border-b border-zinc-800 bg-zinc-900 flex items-center gap-3">
-        <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-black">
-          <Bot size={24} />
+      <div className="p-4 border-b border-zinc-800 bg-zinc-900 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-black">
+            <Bot size={24} />
+          </div>
+          <div>
+            <h2 className="font-bold text-white">GymFlow IA</h2>
+            <p className="text-xs text-green-500 flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-green-500"></span> Online
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="font-bold text-white">GymFlow IA</h2>
-          <p className="text-xs text-green-500 flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-green-500"></span> Online
-          </p>
-        </div>
+        <button 
+          onClick={clearHistory}
+          className="p-2 text-zinc-500 hover:text-red-500 hover:bg-zinc-800 rounded-lg transition-colors"
+          title="Limpar histórico"
+        >
+          <Trash2 size={20} />
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -82,6 +124,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ students, expenses }) 
               <div className="flex items-center gap-2 mb-1 opacity-70 text-xs">
                 {msg.role === 'user' ? <User size={12}/> : <Bot size={12}/>}
                 <span>{msg.role === 'user' ? 'Você' : 'IA'}</span>
+                <span className="mx-1">•</span>
+                <span>{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
               <div className="whitespace-pre-wrap text-sm md:text-base">
                 {msg.content}

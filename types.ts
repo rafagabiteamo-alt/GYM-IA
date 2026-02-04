@@ -9,12 +9,13 @@ export interface Student {
   daysOverdue?: number;
 }
 
-export interface Expense {
+export interface Transaction {
   id: string;
   description: string;
-  category: 'Aluguel' | 'Equipamentos' | 'Limpeza' | 'Funcionários' | 'Outros';
+  category: string;
   amount: number;
   date: string;
+  type: 'income' | 'expense';
 }
 
 export interface DashboardStats {
@@ -31,4 +32,17 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-export type PageView = 'landing' | 'dashboard' | 'students' | 'expenses' | 'ai';
+export interface User {
+  email: string;
+  password: string;
+  academyName: string;
+}
+
+export interface WeeklyTip {
+  id: string;
+  title: string;
+  content: string;
+  type: 'finance' | 'marketing' | 'management';
+}
+
+export type PageView = 'landing' | 'login' | 'register' | 'dashboard' | 'students' | 'expenses' | 'ai';

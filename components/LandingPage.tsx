@@ -1,11 +1,12 @@
 import React from 'react';
 import { CheckCircle, ArrowRight, TrendingUp, ShieldAlert, Clock } from 'lucide-react';
+import { PageView } from '../types';
 
 interface LandingPageProps {
-  onEnterApp: () => void;
+  onNavigate: (page: PageView) => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-yellow-500 selection:text-black">
       {/* Header */}
@@ -15,10 +16,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             <span className="text-yellow-500 text-3xl">⚡</span> GymFlow IA
           </div>
           <button 
-            onClick={onEnterApp}
+            onClick={() => onNavigate('login')}
             className="bg-zinc-100 hover:bg-white text-black font-semibold py-2 px-5 rounded-full text-sm transition-all"
           >
-            Entrar no Sistema
+            Entrar
           </button>
         </div>
       </header>
@@ -36,12 +37,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           O GymFlow IA organiza seus alunos e cobra automaticamente pelo WhatsApp. Simples, rápido e sem dor de cabeça.
         </p>
         <button 
-          onClick={onEnterApp}
+          onClick={() => onNavigate('register')}
           className="group bg-yellow-500 hover:bg-yellow-400 text-black text-lg font-bold py-4 px-10 rounded-full transition-all flex items-center gap-2 mx-auto transform hover:scale-105"
         >
-          Testar Grátis por 7 Dias <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+          Começar Agora <ArrowRight className="group-hover:translate-x-1 transition-transform" />
         </button>
-        <p className="text-zinc-500 text-sm mt-4">Sem cartão de crédito necessário • Cancele quando quiser</p>
+        <p className="text-zinc-500 text-sm mt-4">Cadastro simples • Cancele quando quiser</p>
       </section>
 
       {/* Pain Points */}
@@ -102,10 +103,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             </ul>
 
             <button 
-              onClick={onEnterApp}
+              onClick={() => onNavigate('register')}
               className="w-full bg-black text-white font-bold py-4 rounded-xl hover:bg-zinc-800 transition-colors"
             >
-              Começar Agora
+              Criar Conta Agora
             </button>
           </div>
         </div>
